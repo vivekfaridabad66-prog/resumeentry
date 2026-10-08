@@ -1,0 +1,71 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: talentflow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d talentflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports: ["6379:6379"]
+    volumes: ["redis_data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  setup:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm ci && npx prisma generate"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/talentflow?schema=public
+      REDIS_URL: redis://redis:6379
+    volumes: [".:/app", "node_modules:/app/node_modules", "uploads:/app/private-uploads"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npx prisma migrate deploy && npm run dev -- --hostname 0.0.0.0"
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/talentflow?schema=public
+      REDIS_URL: redis://redis:6379
+    ports: ["3000:3000"]
+    volumes: [".:/app", "node_modules:/app/node_modules", "uploads:/app/private-uploads"]
+    depends_on:
+      setup: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+  worker:
+    image: node:22-alpine
+    working_dir: /app
+    command: npm run worker
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/talentflow?schema=public
+      REDIS_URL: redis://redis:6379
+      STORAGE_PATH: /app/private-uploads
+    volumes: [".:/app", "node_modules:/app/node_modules", "uploads:/app/private-uploads"]
+    depends_on:
+      setup: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+volumes:
+  postgres_data:
+  redis_data:
+  node_modules:
+  uploads:

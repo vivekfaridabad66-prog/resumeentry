@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("ADMIN")
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([role, isActive])
+}
+
+enum ResumeStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REVIEW
+  DUPLICATE
+  CANCELLED
+}
+
+model Resume {
+  id          String   @id @default(cuid())
+  fileName    String
+  filePath    String   @unique
+  fileType    String
+  fileSize    BigInt
+  fileHash    String
+  status      ResumeStatus @default(PENDING)
+  processedAt DateTime?
+  batchId     String?
+  batch       ProcessingBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  extraction  ResumeExtraction?
+  duplicateOf String?
+  duplicates  Duplicate[] @relation("OriginalResume")
+  errors      ExtractionError[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status, createdAt])
+  @@index([batchId, status])
+  @@index([fileHash])
+  @@index([processedAt])
+  @@index([fileName])
+}
+
+model ResumeExtraction {
+  id                    String   @id @default(cuid())
+  resumeId              String   @unique
+  resume                Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  name                  String?
+  nameConfidence        Float     @default(0)
+  email                 String?
+  otherEmails           String[]  @default([])
+  emailConfidence       Float     @default(0)
+  phone                 String?
+  countryCode           String?
+  normalizedPhone       String?
+  phoneConfidence       Float     @default(0)
+  designation           String?
+  designationConfidence Float     @default(0)
+  overallConfidence     Float     @default(0)
+  requiresReview        Boolean   @default(true)
+  reviewedAt            DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([email])
+  @@index([normalizedPhone])
+  @@index([requiresReview, overallConfidence])
+}
+
+model ProcessingBatch {
+  id            String   @id @default(cuid())
+  name          String
+  status        String   @default("QUEUED")
+  totalFiles    Int      @default(0)
+  processedFiles Int     @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  resumes       Resume[]
+  jobs          ProcessingJob[]
+
+  @@index([status, createdAt])
+}
+
+model ProcessingJob {
+  id          String   @id @default(cuid())
+  batchId     String?
+  batch       ProcessingBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  queueJobId  String?  @unique
+  status      String   @default("QUEUED")
+  total       Int      @default(0)
+  completed   Int      @default(0)
+  failed      Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Duplicate {
+  id              String   @id @default(cuid())
+  resumeId        String
+  originalResumeId String
+  resume          Resume   @relation("OriginalResume", fields: [originalResumeId], references: [id], onDelete: Cascade)
+  matchType       String
+  createdAt       DateTime @default(now())
+
+  @@unique([resumeId, originalResumeId])
+  @@index([matchType])
+}
+
+model ExtractionError {
+  id            String   @id @default(cuid())
+  resumeId      String
+  resume        Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  errorType     String
+  errorMessage  String
+  retryCount    Int      @default(0)
+  lastAttemptAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([resumeId, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actor     String
+  action    String
+  targetId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action, createdAt])
+}

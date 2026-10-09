@@ -11,7 +11,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       className="h-full antialiased"
+      data-theme="light"
+      suppressHydrationWarning
     >
+      <head><script dangerouslySetInnerHTML={{ __html: `(function(){var t;try{t=localStorage.getItem("talentflow.theme")}catch(e){}document.documentElement.dataset.theme=t==="light"||t==="dark"?t:window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"})()` }} /></head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

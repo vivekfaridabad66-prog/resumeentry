@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import ThemeToggle from "../../theme-toggle";
 import { useRouter } from "next/navigation";
 
 import { useState } from "react";
@@ -25,5 +26,5 @@ export default function LoginPage() {
       setBusy(false);
     }
   }
-  return <main className="login-page"><div className="login-card"><Link href="/" className="brand login-brand"><span className="brand-mark"><span /><span /><span /><span /></span><span>talent<span className="brand-light">flow</span></span></Link><div className="login-heading"><h1>Welcome back</h1><p>Sign in to your Talentflow workspace.</p></div><form onSubmit={submit}><label>Email address<input required type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label><label>Password<input required type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>{error && <p className="login-error" role="alert">{error}</p>}<button className="button button-primary login-submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button></form><p className="login-foot">Access is managed by your workspace administrator.</p></div></main>;
+  return <main className="login-page"><div className="login-card"><div className="login-top"><Link href="/" className="brand login-brand"><span className="brand-mark"><span /><span /><span /><span /></span><span>talent<span className="brand-light">flow</span></span></Link><ThemeToggle /></div><div className="login-heading"><h1>Welcome back</h1><p>Sign in to your Talentflow workspace.</p></div><form onSubmit={submit}><label>Email address<input required type="email" autoComplete="username" value={email} onChange={(event) => setEmail(event.target.value)} /></label><label>Password<input required type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} /></label>{error && <p className="login-error" role="alert">{error}</p>}<button className="button button-primary login-submit" disabled={busy}>{busy ? "Signing in…" : "Sign in"}</button></form><p className="login-foot">Access is managed by your workspace administrator.</p></div></main>;
 }

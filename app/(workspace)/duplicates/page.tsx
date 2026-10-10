@@ -1,2 +1,3 @@
+import PageAccess from "../page-access";
 import ResumeList from "../resume-list";
-export default function DuplicatesPage() { return <ResumeList title="Duplicate resumes" status="DUPLICATE" />; }
+export default function Page() { return <PageAccess permission="resumes.view" render={() => <ResumeList title="Duplicate resumes" status="DUPLICATE" />} />; }

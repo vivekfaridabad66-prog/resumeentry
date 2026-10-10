@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import ThemeToggle from "../../theme-toggle";
+import { firstDestination, type WorkspaceAccount } from "@/lib/workspace-access";
 import { useRouter } from "next/navigation";
 
 import { useState } from "react";
@@ -12,12 +13,12 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  useEffect(() => { void fetch("/api/auth/session").then((response) => { if (response.ok) router.replace("/"); }); }, [router]);
+  useEffect(() => { const controller = new AbortController(); void fetch("/api/auth/session", { cache: "no-store", signal: controller.signal }).then(async response => { if (response.ok) router.replace(firstDestination(await response.json() as WorkspaceAccount)); }).catch(() => {}); return () => controller.abort(); }, [router]);
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError("");
     try {
       const response = await fetch("/api/auth/login", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, password }) });
-      if (response.ok) { router.push("/"); return; }
+      if (response.ok) { setPassword(""); const current = await fetch("/api/auth/session", { cache: "no-store" }); if (!current.ok) throw new Error("Session unavailable"); router.replace(firstDestination(await current.json() as WorkspaceAccount)); router.refresh(); return; }
       const data = await response.json().catch(() => null);
       setError(data?.error ?? "Could not sign in. Please try again.");
     } catch {

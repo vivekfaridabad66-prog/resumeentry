@@ -1,7 +1,6 @@
-import { clearSession, requireApiSession } from "@/lib/auth";
-export async function POST() {
-  const unauthorized = await requireApiSession();
-  if (unauthorized) return unauthorized;
+import { checkOrigin, clearSession } from "@/lib/auth";
+export async function POST(request: Request) {
+  const forbidden = checkOrigin(request); if (forbidden) return forbidden;
   await clearSession();
   return Response.json({ ok: true });
 }

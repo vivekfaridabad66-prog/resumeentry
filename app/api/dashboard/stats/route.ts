@@ -2,7 +2,7 @@ import { requireApiSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export async function GET() {
-  const unauthorized = await requireApiSession();
+  const unauthorized = await requireApiSession("dashboard.view");
   if (unauthorized) return unauthorized;
   const cutoff = new Date(Date.now() - 60_000);
   const [total, grouped, review, duplicates, latestBatch, processedLastMinute] = await Promise.all([

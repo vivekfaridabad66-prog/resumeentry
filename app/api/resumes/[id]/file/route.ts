@@ -5,7 +5,7 @@ import { requireApiSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export async function GET(_request: Request, context: RouteContext<"/api/resumes/[id]/file">) {
-  const unauthorized = await requireApiSession(); if (unauthorized) return unauthorized;
+  const unauthorized = await requireApiSession("resumes.download"); if (unauthorized) return unauthorized;
   const { id } = await context.params;
   const resume = await db.resume.findUnique({ where: { id }, select: { filePath: true, fileName: true, fileType: true } });
   if (!resume) return Response.json({ error: "Resume not found." }, { status: 404 });

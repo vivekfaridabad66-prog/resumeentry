@@ -1,2 +1,3 @@
+import PageAccess from "../page-access";
 import ResumeList from "../resume-list";
-export default function ResumesPage() { return <ResumeList title="All resumes" />; }
+export default function Page() { return <PageAccess permission="resumes.view" render={() => <ResumeList title="All resumes" />} />; }

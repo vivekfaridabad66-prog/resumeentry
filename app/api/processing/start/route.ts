@@ -1,9 +1,10 @@
-import { requireApiSession } from "@/lib/auth";
+import { requireApiSession, session } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getResumeQueue } from "@/lib/queue";
 
-export async function POST() {
-  const unauthorized = await requireApiSession(); if (unauthorized) return unauthorized;
+export async function POST(request: Request) {
+  const unauthorized = await requireApiSession("batches.manage", request); if (unauthorized) return unauthorized;
+  const actor = (await session())?.id; if (!actor) return Response.json({ error: "Unauthorized" }, { status: 401 });
   await getResumeQueue().resume();
   let cursor: string | undefined; let enqueued = 0;
   while (true) {
@@ -13,6 +14,6 @@ export async function POST() {
     enqueued += pending.length; cursor = pending[pending.length - 1].id;
     if (pending.length < 1000) break;
   }
-  await db.auditLog.create({ data: { actor: "admin", action: "processing.started", metadata: { enqueued } } });
+  await db.auditLog.create({ data: { actor, action: "processing.started", metadata: { enqueued } } });
   return Response.json({ enqueued });
 }

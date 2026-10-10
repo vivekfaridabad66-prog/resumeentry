@@ -4,28 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import ThemeToggle from "../theme-toggle";
-import AccountMenu, { type WorkspaceAccount } from "./account-menu";
+import AccountMenu from "./account-menu";
+import { useWorkspaceAccount, useCan } from "./workspace-access";
+import { firstDestination, isActiveRoute, visibleNavigation } from "@/lib/workspace-access";
 
-const nav = [
-  {
-    label: "Workspace",
-    items: [
-      ["Overview", "⌂", "/"],
-      ["All resumes", "▤", "/resumes"],
-      ["Review queue", "◷", "/review", ""],
-      ["Duplicates", "⧉", "/duplicates"],
-      ["Failed resumes", "!", "/failed"],
-    ],
-  },
-  {
-    label: "Manage",
-    items: [
-      ["Import files", "↑", "/import"],
-      ["Processing", "◉", "/batches"],
-      ["Export data", "⇩", "/export"],
-    ],
-  },
-];
 
 function Icon({
   children,
@@ -73,12 +55,14 @@ const serverSnapshot = () => false;
 
 export default function WorkspaceShell({
   children,
-  account,
 }: {
   children: React.ReactNode;
-  account: WorkspaceAccount;
 }) {
   const pathname = usePathname();
+  const account = useWorkspaceAccount();
+  const can = useCan();
+  const nav = visibleNavigation(account);
+  const home = firstDestination(account);
   const collapsed = useSyncExternalStore(
     subscribePreference,
     readCollapsed,
@@ -120,15 +104,15 @@ export default function WorkspaceShell({
     drawerRef.current?.close();
   }
   const isActive = (href: string) =>
-    pathname === href || (href !== "/" && pathname.startsWith(`${href}/`));
+    isActiveRoute(pathname, href);
   const current =
     nav
       .flatMap((group) => group.items)
-      .find(([, , href]) => isActive(href))?.[0] ?? "Settings";
+      .find(item => isActive(item.href))?.label ?? (pathname === "/no-access" ? "No access" : pathname.startsWith("/users/") ? "User details" : "Settings");
 
   const sidebarContent = (
     <>
-      <Link href="/" className="brand">
+      <Link href={home} className="brand">
         <span className="brand-mark">
           <span />
           <span />
@@ -151,7 +135,7 @@ export default function WorkspaceShell({
         {nav.map((group) => (
           <div className="nav-group" key={group.label}>
             <p className="nav-label">{group.label}</p>
-            {group.items.map(([label, icon, href, badge]) => (
+            {group.items.map(({ label, icon, href }) => (
               <Link
                 key={label}
                 href={href}
@@ -162,14 +146,13 @@ export default function WorkspaceShell({
               >
                 <Icon className="nav-icon">{icon}</Icon>
                 <span>{label}</span>
-                {badge && <span className="nav-badge">{badge}</span>}
               </Link>
             ))}
           </div>
         ))}
       </nav>
       <div className="sidebar-bottom">
-        <Link
+        {can("settings.view") && <Link
           className={`nav-item ${isActive("/settings") ? "selected" : ""}`}
           href="/settings"
           aria-label="Settings"
@@ -178,7 +161,7 @@ export default function WorkspaceShell({
         >
           <Icon className="nav-icon">⚙</Icon>
           <span>Settings</span>
-        </Link>
+        </Link>}
         <div className="storage-card">
           <span>Resume files are stored privately.</span>
         </div>
@@ -190,13 +173,13 @@ export default function WorkspaceShell({
             <b title={account.email}>{account.email}</b>
             <span>{account.role}</span>
           </div>
-          <Link
+          {can("settings.view") && <Link
             href="/settings"
             className="more-button"
             aria-label="Account options"
           >
             ···
-          </Link>
+          </Link>}
         </div>
       </div>
     </>
@@ -272,7 +255,7 @@ export default function WorkspaceShell({
               <Icon>{mobile ? "☰" : collapsed ? "›" : "‹"}</Icon>
             </button>
             <nav className="breadcrumbs" aria-label="Breadcrumb">
-              <Link href="/">Workspace</Link>
+              <Link href={home}>Workspace</Link>
               <span aria-hidden="true">/</span>
               {pathname.startsWith("/resumes/") ? (
                 <>
@@ -287,13 +270,13 @@ export default function WorkspaceShell({
           </div>
           <div className="top-actions">
             <ThemeToggle />
-            <Link
+            {can("batches.view") && <Link
               href="/batches"
               className="icon-button notification"
               aria-label="Processing activity"
             >
               ♧<i />
-            </Link>
+            </Link>}
             <div className="top-divider" />
             <AccountMenu account={account} />
           </div>
@@ -309,13 +292,13 @@ export default function WorkspaceShell({
             {children}
             <footer className="page-footer">
               <span>© 2026 Talentflow, Inc.</span>
-              <div>
+              {can("settings.view") && <div>
                 <Link href="/settings">Help center</Link>
                 <Link href="/settings">Privacy</Link>
                 <Link href="/settings">
                   System status <i className="live-dot" />
                 </Link>
-              </div>
+              </div>}
             </footer>
           </div>
         </div>

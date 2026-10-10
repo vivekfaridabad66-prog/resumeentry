@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { mkdir, writeFile, unlink } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
-import { requireApiSession } from "@/lib/auth";
+import { requireApiSession, session } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getResumeQueue } from "@/lib/queue";
 
@@ -22,8 +22,9 @@ function matchesFileSignature(extension: string, buffer: Buffer) {
 }
 
 export async function POST(request: Request) {
-  const unauthorized = await requireApiSession();
+  const unauthorized = await requireApiSession("resumes.import", request);
   if (unauthorized) return unauthorized;
+  const actor = (await session())?.id; if (!actor) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > maxRequestBytes + 2 * 1024 * 1024) return Response.json({ error: "Upload request exceeds the allowed size." }, { status: 413 });
   const form = await request.formData();
@@ -65,6 +66,6 @@ export async function POST(request: Request) {
   const batchAfterUpload = await db.processingBatch.update({ where: { id: batch.id }, data: { totalFiles: { increment: stored }, processedFiles: { increment: exactDuplicates }, status: complete ? "PROCESSING" : "UPLOADING" } });
   if (complete && batchAfterUpload.processedFiles >= batchAfterUpload.totalFiles) await db.processingBatch.update({ where: { id: batch.id }, data: { status: "COMPLETED" } });
   await Promise.all(accepted.map((resumeId) => getResumeQueue().add("process-resume", { resumeId }, { jobId: resumeId })));
-  await db.auditLog.create({ data: { actor: "admin", action: "resume.batch_uploaded", targetId: batch.id, metadata: { accepted: accepted.length, rejected: rejected.length } } });
+  await db.auditLog.create({ data: { actor, action: "resume.batch_uploaded", targetId: batch.id, metadata: { accepted: accepted.length, rejected: rejected.length } } });
   return Response.json({ batchId: batch.id, accepted: stored, duplicates: exactDuplicates, rejected, queued: accepted.length }, { status: 202 });
 }

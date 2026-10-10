@@ -4,13 +4,15 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import SignOutButton from "./sign-out-button";
 
-export type WorkspaceAccount = { email: string; role: string };
+import type { WorkspaceAccount } from "@/lib/workspace-access";
+import { useCan } from "./workspace-access";
 
 export default function AccountMenu({
   account,
 }: {
   account: WorkspaceAccount;
 }) {
+  const can = useCan();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -95,14 +97,14 @@ export default function AccountMenu({
             <strong>{account.email}</strong>
             <span className="account-role">{account.role}</span>
           </div>
-          <Link
+          {can("settings.view") && <Link
             href="/settings"
             role="menuitem"
             className="account-menu-item"
             onClick={() => close()}
           >
             Settings
-          </Link>
+          </Link>}
           <SignOutButton
             className="account-menu-item sign-out-menu-item"
             menuItem

@@ -397,3 +397,113 @@ button { font: inherit; cursor: pointer; }
   .modern-workspace .tool-header .batch-controls { width: 100%; }
   .login-card { padding: 24px; }
 }
+
+/* User management uses existing workspace surfaces and theme tokens. */
+.modern-workspace .management-stack { display: grid; gap: 24px; }
+.modern-workspace .management-form { display: grid; gap: 18px; margin-top: 20px; }
+.modern-workspace .management-form fieldset { min-width: 0; border: 0; margin: 0; padding: 0; display: grid; gap: 18px; }
+.modern-workspace .management-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.modern-workspace .management-form label { display: grid; gap: 8px; min-width: 0; color: var(--text-secondary); font-size: 14px; }
+.modern-workspace .management-form .tool-input { width: 100%; }
+.modern-workspace .management-actions,.modern-workspace .management-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.modern-workspace .management-tabs { margin-bottom: 24px; }
+.modern-workspace .management-check { display: flex !important; align-items: center; gap: 10px; cursor: pointer; }
+.modern-workspace .management-check input { width: 17px; height: 17px; flex-shrink: 0; accent-color: var(--accent-strong); }
+.modern-workspace .management-muted,.modern-workspace .management-subtext { color: var(--text-muted); font-size: 13px; }
+.modern-workspace .management-subtext { display: block; margin-top: 6px; }
+.modern-workspace .management-section-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; align-items: center; }
+.modern-workspace .management-success { color: var(--success-text); background: var(--success-surface); padding: 14px 16px; border-radius: var(--radius-control); font-size: 14px; }
+.modern-workspace .management-note { color: var(--text-secondary); background: var(--surface-subtle); padding: 14px 16px; border: 1px solid var(--border); border-radius: var(--radius-control); font-size: 13px; }
+.modern-workspace .management-danger { color: var(--danger-text); background: var(--danger-surface); border-color: var(--danger-text); }
+.modern-workspace .permission-groups { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; margin: 20px 0; }
+.modern-workspace .permission-groups fieldset { border: 1px solid var(--border); border-radius: var(--radius-control); padding: 16px; margin: 0; min-width: 0; display: grid; gap: 12px; }
+.modern-workspace .permission-groups legend { padding: 0 6px; color: var(--text-primary); font-weight: 600; font-size: 14px; }
+.modern-workspace .permission-groups small { display: block; color: var(--text-muted); margin-top: 3px; font-size: 12px; overflow-wrap: anywhere; }
+.modern-workspace .permission-summary { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; margin-block: 24px; }
+.modern-workspace .permission-summary section { border: 1px solid var(--border); border-radius: var(--radius-control); background: var(--surface-subtle); padding: 16px; min-width: 0; }
+.modern-workspace .permission-summary h3 { font-size: 14px; margin: 0 0 12px; }
+.modern-workspace .permission-summary ul { padding-left: 18px; margin: 0; font-size: 12px; line-height: 1.8; overflow-wrap: anywhere; }
+.modern-workspace .access-state { max-width: 760px; }
+@media (max-width: 700px) {
+ .modern-workspace .management-form-grid,.modern-workspace .permission-groups,.modern-workspace .permission-summary { grid-template-columns: minmax(0,1fr); }
+ .modern-workspace .user-management .tool-header { align-items: flex-start; gap: 16px; flex-direction: column; }
+ .modern-workspace .management-actions .button { flex: none; }
+}
+
+/* Permissions administration: scoped master/detail surfaces and compact editors. */
+.modern-workspace .permissions-page { height: calc(100dvh - 128px); min-height: 560px; display: flex; flex-direction: column; }
+.modern-workspace .permissions-page>:is(.tool-header,.management-success,.ui-error,.permissions-tabs) { flex-shrink: 0; }
+.modern-workspace .permissions-page>[role="tabpanel"] { flex: 1; min-height: 320px; }
+.modern-workspace .permissions-user-stage { height: 100%; min-height: 0; overflow-y: auto; }
+.modern-workspace .permissions-page .permissions-tabs { gap: 6px; margin-bottom: 16px; }
+.modern-workspace .permissions-page .permissions-tabs .button { border-radius: var(--radius-control); }
+.modern-workspace .permissions-master-detail { display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 20px; align-items: stretch; height: 100%; min-height: 0; }
+.modern-workspace .permissions-role-list { display: flex; flex-direction: column; height: 100%; min-width: 0; padding: 0; }
+.modern-workspace .permissions-list-heading { padding: 20px 16px 16px; border-bottom: 1px solid var(--border); }
+.modern-workspace .permissions-list-heading h2 { display: flex; align-items: center; justify-content: space-between; font-size: 15px; margin: 0 0 16px; }
+.modern-workspace .permissions-list-heading .search-box { min-width: 0; width: 100%; }
+.modern-workspace .permissions-role-scroll { overflow-y: auto; min-height: 0; padding: 8px; scrollbar-gutter: stable; }
+.modern-workspace .permissions-role-option { display: block; width: 100%; text-align: left; padding: 14px 12px; border: 1px solid transparent; border-radius: var(--radius-control); background: transparent; color: var(--text-primary); cursor: pointer; margin-bottom: 4px; }
+.modern-workspace .permissions-role-option:hover { background: var(--surface-subtle); }
+.modern-workspace .permissions-role-option[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.modern-workspace .permissions-role-title { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+.modern-workspace .permissions-role-title .count-badge { font-size: 10px; padding: 2px 6px; }
+.modern-workspace .permissions-role-meta { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 8px; }
+.modern-workspace .permissions-list-empty { padding: 20px 12px; font-size: 13px; color: var(--text-muted); }
+.modern-workspace .permissions-editor { padding: 0; height: 100%; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.modern-workspace .permissions-editor-heading { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+.modern-workspace .permissions-editor-heading p { margin: 4px 0 0; overflow-wrap: anywhere; }
+.modern-workspace .permissions-editor-heading>.button { margin-bottom: 12px; }
+.modern-workspace .permissions-editor-form { margin-top: 0; gap: 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.modern-workspace .permissions-editor-scroll { padding: 20px 24px; flex: 1; overflow-y: auto; min-height: 0; scrollbar-gutter: stable; }
+.modern-workspace .permissions-action-bar { position: sticky; bottom: 0; z-index: 1; background: var(--surface); border-top: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; flex-shrink: 0; }
+.modern-workspace .permissions-action-bar .management-actions { gap: 8px; }
+.modern-workspace .permissions-action-bar .button { padding: 9px 12px; min-height: 40px; }
+.modern-workspace .permissions-page .permission-groups { display: grid; grid-template-columns: minmax(0,1fr); gap: 8px; margin: 16px 0 0; }
+.modern-workspace .permissions-page .permission-category { border: 1px solid var(--border); border-radius: var(--radius-control); overflow: hidden; background: var(--surface); }
+.modern-workspace .permissions-page .permission-category-toggle { border: 0; background: var(--surface-subtle); padding: 13px 14px; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: left; cursor: pointer; color: var(--text-primary); font-size: 14px; font-weight: 600; }
+.modern-workspace .permissions-page .permission-category-count { font-size: 12px; font-weight: 400; color: var(--text-secondary); white-space: nowrap; }
+.modern-workspace .permissions-page .permission-category-count>span { display: inline-block; min-width: 18px; text-align: right; font-size: 18px; }
+.modern-workspace .permissions-page .permission-groups fieldset { border: 0; border-radius: 0; padding: 8px 14px; display: grid; gap: 0; }
+.modern-workspace .permissions-page .permission-groups .management-check { padding: 9px 0; min-height: 44px; font-size: 13px; gap: 12px; }
+.modern-workspace .permissions-page .management-check input { width: 20px; height: 20px; }
+.modern-workspace .permissions-page .permission-select-all { border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+.modern-workspace .permissions-page .permission-groups small { font-size: 11px; }
+.modern-workspace .permissions-page .permission-summary { gap: 8px; margin: 0 0 16px; }
+.modern-workspace .permissions-page .permission-summary details { border: 1px solid var(--border); border-radius: var(--radius-control); min-width: 0; background: var(--surface-subtle); }
+.modern-workspace .permissions-page .permission-summary summary { padding: 12px; font-size: 12px; cursor: pointer; }
+.modern-workspace .permissions-page .permission-summary summary .count-badge { margin-left: 6px; font-size: 10px; }
+.modern-workspace .permissions-page .permission-summary ul { max-height: 150px; overflow-y: auto; padding: 0 12px 12px 28px; }
+.modern-workspace .permissions-page .permission-summary details>p { padding: 0 12px; }
+.modern-workspace .permissions-empty { height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; color: var(--text-muted); }
+.modern-workspace .permissions-empty-icon { color: var(--accent); font-size: 40px; margin-bottom: 16px; }
+.modern-workspace .permissions-empty p { max-width: 300px; }
+.modern-workspace .permissions-mobile-back { display: none; }
+.permissions-create-dialog { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); border-radius: var(--radius-control); padding: 24px; width: min(480px, calc(100vw - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; box-shadow: var(--card-shadow); }
+.permissions-create-dialog::backdrop { background: rgb(15 15 25 / 55%); }
+.permissions-create-dialog .permissions-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.permissions-create-dialog h2 { margin: 0; font-size: 20px; }
+.permissions-create-dialog .management-form { margin-top: 16px; }
+.modern-workspace .permissions-page :is(button,input,summary,[role="tabpanel"]):focus-visible,.permissions-create-dialog :is(button,input):focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.modern-workspace .permissions-page .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media (max-width: 1100px) {
+ .modern-workspace .permissions-master-detail { grid-template-columns: 280px minmax(0,1fr); gap: 14px; }
+ .modern-workspace .permissions-editor-heading,.modern-workspace .permissions-editor-scroll { padding: 16px; }
+ .modern-workspace .permissions-action-bar { padding: 12px 16px; }
+ .modern-workspace .permissions-page .permission-summary { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 800px) {
+ .modern-workspace .permissions-master-detail { grid-template-columns: minmax(0,1fr); }
+ .modern-workspace .permissions-master-detail[data-detail="true"]>.permissions-role-list,.modern-workspace .permissions-master-detail[data-detail="false"]>.permissions-empty { display: none; }
+ .modern-workspace .permissions-role-list { height: auto; max-height: 100%; }
+ .modern-workspace .permissions-mobile-back { display: inline-flex; }
+ .modern-workspace .permissions-editor { height: 100%; }
+ .modern-workspace .permissions-action-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+ .modern-workspace .permissions-action-bar .management-actions { display: flex; flex-wrap: wrap; }
+ .modern-workspace .permissions-action-bar .button { flex: 1 1 auto; }
+ .modern-workspace .permissions-page .permission-category-toggle { padding: 12px; }
+ .modern-workspace .permissions-page .tool-header .management-actions { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+ .modern-workspace .permissions-page *,.permissions-create-dialog * { scroll-behavior: auto; transition: none; animation: none; }
+}

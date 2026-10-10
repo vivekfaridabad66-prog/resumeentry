@@ -1,12 +1,13 @@
 import ExcelJS from "exceljs";
 import { PassThrough, Readable } from "node:stream";
-import { requireApiSession } from "@/lib/auth";
+import { requireApiSession, session } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { appendResumeExportRow, createResumeWorksheet } from "@/lib/excel-export";
 
 export const maxDuration = 300;
 export async function GET(request: Request) {
-  const unauthorized = await requireApiSession(); if (unauthorized) return unauthorized;
+  const unauthorized = await requireApiSession("resumes.export"); if (unauthorized) return unauthorized;
+  const actor = (await session())?.id; if (!actor) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const status = new URL(request.url).searchParams.get("status");
   const allowed = ["COMPLETED", "REVIEW", "FAILED", "DUPLICATE", "CANCELLED", "REVIEWED"];
   if (status && status !== "ALL" && !allowed.includes(status)) return Response.json({ error: "Unsupported export status." }, { status: 400 });
@@ -28,7 +29,7 @@ export async function GET(request: Request) {
         if (rows.length < 500) break;
       }
       await sheet.commit(); await workbook.commit();
-      await db.auditLog.create({ data: { actor: "admin", action: "export.completed", metadata: { status: status ?? "ALL" } } });
+      await db.auditLog.create({ data: { actor, action: "export.completed", metadata: { status: status ?? "ALL" } } });
     } catch (error) { output.destroy(error instanceof Error ? error : new Error("Excel export failed")); }
   })();
   return new Response(Readable.toWeb(output) as ReadableStream, { headers: { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "content-disposition": `attachment; filename="resume-export-${new Date().toISOString().slice(0, 10)}.xlsx"`, "cache-control": "no-store" } });

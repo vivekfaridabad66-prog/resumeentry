@@ -1,9 +1,10 @@
-import { requireApiSession } from "@/lib/auth";
+import { requireApiSession, session } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getResumeQueue } from "@/lib/queue";
 
-export async function POST(_request: Request, context: RouteContext<"/api/batches/[id]/cancel">) {
-  const unauthorized = await requireApiSession(); if (unauthorized) return unauthorized;
+export async function POST(request: Request, context: RouteContext<"/api/batches/[id]/cancel">) {
+  const unauthorized = await requireApiSession("batches.manage", request); if (unauthorized) return unauthorized;
+  const actor = (await session())?.id; if (!actor) return Response.json({ error: "Unauthorized" }, { status: 401 });
   const { id } = await context.params;
   const batch = await db.processingBatch.findUnique({ where: { id } });
   if (!batch) return Response.json({ error: "Batch not found." }, { status: 404 });
@@ -18,6 +19,6 @@ export async function POST(_request: Request, context: RouteContext<"/api/batche
   }));
   const cancelled = await db.resume.updateMany({ where: { batchId: id, status: "PENDING" }, data: { status: "CANCELLED", processedAt: new Date() } });
   await db.processingBatch.update({ where: { id }, data: { status: "CANCELLED" } });
-  await db.auditLog.create({ data: { actor: "admin", action: "batch.cancelled", targetId: id, metadata: { cancelledResumes: cancelled.count } } });
+  await db.auditLog.create({ data: { actor, action: "batch.cancelled", targetId: id, metadata: { cancelledResumes: cancelled.count } } });
   return Response.json({ cancelled: cancelled.count, running: Math.max(0, batch.totalFiles - batch.processedFiles - cancelled.count) });
 }
